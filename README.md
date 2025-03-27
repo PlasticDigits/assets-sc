@@ -1,60 +1,85 @@
-# CL8Y token
+# A$$ETS Token
 
-## About
+A$$ETS is an ERC20 token contract with advanced features including tax mechanics, anti-snipe protection, and maximum wallet balance restrictions. The contract is built on the BNB Chain and integrates with TidalDex.com for liquidity.
 
-CL8Y (Ceramic Liberty) is a deflationary token designed to sustainably fund open-source blockchain development. Created by Ceramic, a blockchain developer with extensive experience since 2018, CL8Y implements an innovative tokenomic model that aligns the interests of open-source projects, developers, and token holders.
+## Features
 
-### Core Features
+- **Tax System**
 
-- **Total Supply**: 3,000,000 CL8Y tokens
-- **Launch Date**: March 1, 2025
-- **Network**: Binance Smart Chain (BSC)
-- **Trading Mechanics**: Zero buy tax, declining sell tax structure
-- **Smart Contract**: Advanced security features with OpenZeppelin standards
+  - Configurable buy and sell taxes
+  - Tax cap of 20,000 tokens
+  - Default buy tax: 1.00%
+  - Default sell tax: 10.00%
+  - Tax receiver address can be updated by owner
 
-### Tokenomics
+- **Anti-Snipe Protection**
 
-- **Initial Sell Tax**: 30% (burned)
-- **Tax Reduction Schedule**:
-  - 10% at 24 hours
-  - 1% at 7 days
-  - 0.25% at $10M market cap
-- **Max Wallet**: Initially 1,000 tokens, 10,000 after 1 hour, unlimited after 24 hours
-- **Trading Restrictions**: Anti-bot measures and fair launch protections
+  - 50% tax on buys during first 60 seconds of trading
+  - Helps prevent front-running and sniping
 
-### Purpose & Vision
+- **Maximum Wallet Balance**
 
-CL8Y serves as a sustainable funding mechanism for open-source blockchain development. Projects utilizing Ceramic's open-source technologies can support ongoing development through automated CL8Y purchases for burns and liquidity provision. This creates:
+  - Default maximum balance: 30,000 tokens
+  - Can only be increased, not decreased
+  - Option to remove maximum balance limit entirely
 
-1. Sustainable funding for public good development
-2. Constant buy pressure benefiting holders
-3. Increasing scarcity through systematic burns
-4. Fair value distribution with no presales or private allocations
+- **Trading Controls**
 
-### Community & Social
+  - Trading can be opened immediately or scheduled for future
+  - Once trading is opened, it cannot be closed
+  - Trading must be explicitly opened by owner
 
-- Telegram: t.me/ceramicliberty
-- Twitter: x.com/ceramictoken
+- **Exempt Addresses**
+  - Owner can exempt addresses from:
+    - Maximum balance restrictions
+    - Anti-snipe protection
+    - Buy/sell taxes
 
-### Technical Implementation
+## Technical Details
 
-The smart contract implements:
+- Built with Solidity ^0.8.23
+- Implements OpenZeppelin contracts:
+  - ERC20
+  - ERC20Burnable
+  - ERC20Permit
+  - Ownable
+  - SafeERC20
 
-- ERC20 standard with burn functionality
-- Permit extension for gasless approvals
-- Dynamic tax and wallet limit adjustments
-- Automated liquidity pair creation
-- Owner controls with security timeouts
+## Initial Setup
+
+The contract is initialized with:
+
+- Token Name: "A$$ETS"
+- Token Symbol: "A$$ETS"
+- Initial Supply: 1,000,000 tokens
+- Initial Pairs on TidalDex.com:
+  - A$$ETS/CZUSD
+  - A$$ETS/CZB
+  - A$$ETS/CL8Y
+  - A$$ETS/WBNB
+
+## Owner Functions
+
+- `ownerSetMaxWalletTo(uint256 _value)`: Increase maximum wallet balance
+- `ownerSetMaxWalletToMax()`: Remove maximum wallet balance limit
+- `ownerSetSellTaxTo(uint256 _value)`: Update sell tax (cannot exceed cap)
+- `ownerSetBuyTaxTo(uint256 _value)`: Update buy tax (cannot exceed cap)
+- `ownerOpenTradingNow()`: Open trading immediately
+- `ownerSetTradingOpenTime(uint256 to)`: Schedule trading to open at specific time
+- `ownerSetTaxReceiver(address _value)`: Update tax receiver address
+- `ownerExemptWallet(address wallet)`: Exempt address from restrictions
+- `ownerUnExemptWallet(address wallet)`: Remove address exemption
+- `ownerAddV2Pair(address v2Pair)`: Add new trading pair
+- `ownerRescueTokens(IERC20 _token)`: Rescue ERC20 tokens sent to contract
+
+## Security Features
+
+- Trading must be explicitly opened
+- Maximum wallet balance can only be increased
+- Sell tax cannot be increased once reduced
+- Trading cannot be closed once opened
+- Owner can rescue tokens accidentally sent to contract
 
 ## License
 
-License: GPL-3.0
-
-## build
-
-forge build --via-ir
-
-## deployment
-
-Key variables are set in the script, and should be updated correctly for the network.
-forge script script/DeployCL8Y.s.sol:DeployCL8Y --broadcast --verify -vvv --rpc-url $RPC_URL --etherscan-api-key $ETHERSCAN_API_KEY -i 1 --sender $DEPLOYER_ADDRESS
+GPL-3.0
