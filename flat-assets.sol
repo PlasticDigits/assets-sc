@@ -4419,7 +4419,7 @@ abstract contract ERC20Permit is ERC20, IERC20Permit, EIP712, Nonces {
 // src/assets.sol
 
 /// @title A$$ETS Token Contract
-/// @notice Implementation of the CeramicLiberty.com token with tax and max balance mechanics
+/// @notice Implementation of the A$$ETS Finance token with tax and max balance mechanics
 /// @dev Extends ERC20 with burning capability, permit functionality, and ownership controls
 /// @dev Implements anti-snipe protection for the first 60 seconds of trading
 /// @dev Trading cannot be closed once opened
@@ -4457,7 +4457,7 @@ contract ASSETS is ERC20, ERC20Burnable, ERC20Permit, Ownable {
 
     /// @notice Initializes the token contract with trading parameters
     constructor()
-        ERC20("A$$ETS", "A$$ETS")
+        ERC20("A$$ETS Finance", "A$$ETS")
         ERC20Permit("A$$ETS")
         Ownable(0xb47b915cC85c00493917277E0389777fBd124752)
     {
@@ -4506,21 +4506,29 @@ contract ASSETS is ERC20, ERC20Burnable, ERC20Permit, Ownable {
 
         if (isV2Pair[from]) {
             // is a buy
+            uint256 buyTax;
             if (block.timestamp - tradingOpenTime <= ANTI_SNIPE_DURATION) {
-                // trading open for 5 seconds or less
-                uint256 tax = (value * ANTI_SNIPE_TAX) / 10_000;
-                super._update(from, to, value);
-                super._update(to, taxReceiver, tax);
+                // trading open during anti-snipe duration
+                buyTax = (value * ANTI_SNIPE_TAX) / 10_000;
             } else {
-                // trading open for more than 5 seconds
-                uint256 tax = (value * buyTaxBasis) / 10_000;
-                super._update(from, to, value);
-                super._update(to, taxReceiver, tax);
+                // trading open for more than anti-snipe duration
+                buyTax = (value * buyTaxBasis) / 10_000;
             }
+            super._update(from, to, value);
+            //send tax from buyer, not from lp pair
+            super._update(to, taxReceiver, buyTax);
         } else if (isV2Pair[to]) {
             // is a sell
-            uint256 tax = (value * sellTaxBasis) / 10_000;
+            uint256 tax;
+            if (block.timestamp - tradingOpenTime <= ANTI_SNIPE_DURATION) {
+                // trading open during anti-snipe duration
+                tax = (value * ANTI_SNIPE_TAX) / 10_000;
+            } else {
+                // trading open for more than anti-snipe duration
+                tax = (value * sellTaxBasis) / 10_000;
+            }
             super._update(from, to, value - tax);
+            //send tax from seller, not from lp pair
             super._update(from, taxReceiver, tax);
         } else {
             // is a transfer
