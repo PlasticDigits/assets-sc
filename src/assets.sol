@@ -21,10 +21,10 @@ contract ASSETS is ERC20, ERC20Burnable, ERC20Permit, Ownable {
 
     uint256 public maxBalance = 30_000 ether;
 
-    uint256 public constant TAX_CAP = 20_000 ether;
+    uint256 public constant TAX_CAP = 20_000;
 
-    uint256 public buyTaxBasis = 1_000; // 1.00%
-    uint256 public sellTaxBasis = 10_000; // 10.00%
+    uint256 public buyTaxBasis = 100; // 1.00%
+    uint256 public sellTaxBasis = 1_000; // 10.00%
 
     uint256 public constant ANTI_SNIPE_TAX = 5_000; // 50.00% for anti-snipe
     uint256 public constant ANTI_SNIPE_DURATION = 60 seconds; // first 60 seconds of trading
